@@ -1,0 +1,8 @@
+key.txt
+data/
+results/
+*.json
+__pycache__/
+*.pyc
+.env
+.idea/
