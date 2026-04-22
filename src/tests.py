@@ -1,10 +1,10 @@
 #USDA API Web Scraping for Sentiment Analysis
 import json
-from USDA_API_Data import get_condition_data, Commodities
+from src.USDA_API_Data import get_condition_data, Commodities
 
 if __name__ == "__main__":
 
-    with open('USDA_API_Data.json', 'w') as outfile:
+    with open('../USDA_API_Data.json', 'w') as outfile:
         # creating for loop to retrieving data for 3 main commodities
         for crop in Commodities:
             for year in range(2015, 2026):
