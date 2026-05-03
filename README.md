@@ -42,7 +42,7 @@ dsci510_spring2026_final_project/
 
 **Requirements**
 - Python 3.10+
-- 
+  
 *Install dependencies with....*
 
 pip install -r requirements.txt
