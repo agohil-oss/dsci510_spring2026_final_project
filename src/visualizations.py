@@ -22,17 +22,21 @@ def visualizations():
 
     PREDICTOR = ['tavg_avg', 'temp_range', 'precip_sum']
 
-    #Forest Plot
+    #________________________________
+    #Forest/Coefficient Plot with Crop Subgroups
+    #________________________________
     df_forest = data['forest']
     predictors = df_forest['predictor'].unique()
 
-    #Building the Plot
+    #Building the Forest /Coefficient Plot
     fig, ax = plt.subplots(figsize=(10,6))
     crop_gap = 0.25
     predictor_gap = 1.2
     y_pos = 0
     yticks = []
     yticklabels = []
+
+    #Looping through predictors and commodities
 
     for predictor in predictors:
         df_pred = df_forest[df_forest['predictor'] == predictor]
@@ -97,7 +101,7 @@ def visualizations():
 
 
     #________________________________
-    #Faceted Regression Plot with Crop Subgroups
+    #Partial Regression Plot with Crop Subgroups
     #________________________________
 
     df_partial = data['partial']

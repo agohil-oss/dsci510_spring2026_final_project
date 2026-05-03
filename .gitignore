@@ -1,8 +1,11 @@
 src/key.txt
-data/
-results/
-*.json
+data/*
+results/*
+!data/.gitkeep
+!results/.gitkeep
 __pycache__/
 *.pyc
+*.db
 .env
 .idea/
+.DS_Store

@@ -1,7 +1,5 @@
 import os
 
-from click.testing import Result
-
 #Directories
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT_DIR, "data")
@@ -14,6 +12,7 @@ DB_PATH = os.path.join(DATA_DIR, DB_NAME)
 
 #Data Files
 USDA_CSV = "USDA Crop Yield_Dataset_Raw.csv"
+USDA_GDRIVE_ID = "1hOY77lRu1WS0qtkt2-7L4TzVW0npjma-"
 MERGED_JSON = "merged_agclimate.json"
 FOREST_PLOT_CSV = "forest_plot.csv"
 COEF_DATA_CSV = "coef_data.csv"

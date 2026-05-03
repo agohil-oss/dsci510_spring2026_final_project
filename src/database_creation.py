@@ -1,17 +1,14 @@
-#don't need to upload results in that folder, he will do it himself
-#all sources and intermediate datasets will be in data folder
-#need .env and .env.example - look into
-#_________________
-#NOAA Climate Data
-#_________________
-
-#Reading the State-Level data
 import urllib.request
 import sqlite3
 import csv
 import os
 import re
-from config import DATA_DIR, DB_PATH, NOAA_BASE_URL, USDA_CSV
+import requests
+from config import DATA_DIR, DB_PATH, NOAA_BASE_URL, USDA_CSV, USDA_GDRIVE_ID
+
+#_________________
+#NOAA Climate Data
+#_________________
 
 #Wrote function that uses regex to retrieve latest NOAA data since updates monthly
 def get_noaa_date_stamp():
@@ -40,7 +37,21 @@ def download_noaa_files(date_stamp, output_dir):
         print(f"Saved → {output_path}")
     return date_stamp
 
-#Creating Crop Yield Table
+def download_usda_csv(output_dir):
+    print("Downloading USDA CSV file...")
+
+    url= f"https://drive.google.com/uc?export=download&id={USDA_GDRIVE_ID}"
+    output_path = os.path.join(output_dir, USDA_CSV)
+
+    response = requests.get(url, timeout=60)
+    response.raise_for_status()
+
+    with open(output_path, 'wb') as f:
+        f.write(response.content)
+
+    print("USDA CSV file saved!")
+
+#Creating Crop Yield Table Shell using SQlite3
 def create_tables(cur):
     cur.execute('''
         CREATE TABLE IF NOT EXISTS crop_yield (
@@ -52,7 +63,7 @@ def create_tables(cur):
             )
     ''')
 
-    #Creating Climate Table
+    #Creating Climate Table Shell using SQlite3
     cur.execute('''
         CREATE TABLE IF NOT EXISTS climate (
             state TEXT, 
@@ -89,11 +100,13 @@ def load_usda_data(cur, output_dir):
                 USDA_skipped += 1                              #skip rows with missing yield values
                 continue
 
+            #normalizes USDA values and remove trailing whitespaces
             state = row['State'].strip().title()
             year = int(row['Year'].strip())
             commodity = row['Commodity'].strip().title()
             yield_val = float(row['Value'].replace(',', ''))
 
+            #loading data into crop_yield table
             cur.execute('''
                 INSERT OR IGNORE INTO crop_yield (state, year, commodity, yield)
                 VALUES (?, ?, ?, ?)
@@ -103,10 +116,10 @@ def load_usda_data(cur, output_dir):
     print(f"USDA data transformation complete: {USDA_loaded} valid rows and {USDA_skipped} skipped rows")
 
 
-#Refining NOAA climate data
-
+#Parsing through NOAA climate data
 def load_noaa_data(cur, date_stamp, OUTPUT_DIR):
-    # Detail Data by State and Region
+
+    #Creating state dict which holds NOAA state codes and state string values
 
     states = {
         '01': 'Alabama',
@@ -197,7 +210,7 @@ def load_noaa_data(cur, date_stamp, OUTPUT_DIR):
 
                 code = parts[0]
                 state_code = code[:2]
-                year = int(code[6:10])    #check if this is the right slicing?
+                year = int(code[6:10])
                 values = parts[1:13]
 
                 if state_code not in states:   #skip all data that doesn't have state data
@@ -206,7 +219,7 @@ def load_noaa_data(cur, date_stamp, OUTPUT_DIR):
                 for i,val in enumerate(values):
                     key = (state_code, year, months[i])
 
-                    #start storing data from scratch
+                    #start storing data in NOAA climate dictionary
                     if key not in NOAAclimate_data:
                         NOAAclimate_data[key] = {
                             'state': states[state_code],
@@ -262,6 +275,7 @@ def load_noaa_data(cur, date_stamp, OUTPUT_DIR):
 def build_database():
     os.makedirs(DATA_DIR, exist_ok=True)
 
+    download_usda_csv(DATA_DIR)
     date_stamp = get_noaa_date_stamp()
     download_noaa_files(date_stamp, DATA_DIR)
 

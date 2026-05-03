@@ -45,7 +45,7 @@ def run_analysis():
     print(f"The yearly climate data has {len(df_climate_yearly)} rows")
     print(df_climate_yearly.head(), "\n")    #initial look at data
 
-    #Merging the data
+    #Merging the data on inner function to keep what is in common
     merged = pd.merge(
         df_crop_yield,
         df_climate_yearly,
@@ -64,6 +64,7 @@ def run_analysis():
     #Export merged dataset to JSON
     merged_path = os.path.join(DATA_DIR, MERGED_JSON)
     merged.to_json(merged_path, orient='records', indent=2)
+
     print("Exported to merged_agclimate.json in data folder")
 
     #____________________
@@ -91,6 +92,7 @@ def run_analysis():
 
     OUTCOME = 'yield'
 
+    #_________________________________________
     #Creating the Best-Fit Model per Commodity
     #_________________________________________
 
@@ -111,7 +113,7 @@ def run_analysis():
         #Used AI - Feature Matrix
         continuous_cols = PREDICTORS + ['year_scaled']
         df_crop = df_crop.reset_index(drop=True)
-        scaler = StandardScaler()   #want to standardize all predictors into SDs for regression comparability
+        scaler = StandardScaler()   #want to standardize all predictors into SDs for regression comparability since not in same units
         df_crop[continuous_cols] = scaler.fit_transform(df_crop[continuous_cols])
 
 
@@ -148,7 +150,6 @@ def run_analysis():
         se_all = np.sqrt(mse_train * np.diag(XtX_inv))
 
         #Place Regression Results in Dictionary Per Commodity
-
         crop_results[COMMODITY] = {
             'model': model,
             'X_test': X_test,

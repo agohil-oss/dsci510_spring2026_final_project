@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from config import (DATA_DIR, RESULTS_DIR, USDA_API_BASE_URL, SENTIMENT_SCORES, COMMODITIES, CROP_COLORCODE,
                     SENTIMENT_WEEKLY, SENTIMENT_ANNUAL, SENTIMENT_PLOT_PNG, USDA_API_JSON)
 
-#reading API key - the key.txt file must be in the same folder
+#reading API key - this is reading from the .env file in the root directory
 
 def sentiment_analysis():
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -14,12 +14,21 @@ def sentiment_analysis():
 
     #Load USDA API Key
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(base_dir)
     try:
-        with open(os.path.join(base_dir, 'key.txt'), 'r') as f:
-            api_key = f.read().strip()
-            print(f"Key: {api_key}")
+        env_path = os.path.join(root_dir, '.env')
+        api_key = None
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('USDA_API_KEY'):
+                    api_key = line.split('=', 1)[1].strip().strip('"').strip("'")
+                    break
+        if not api_key:
+            raise ValueError("USDA API Key is empty or missing in .env")
+        print("USDA key loaded successfully")
     except FileNotFoundError:
-        raise FileNotFoundError("No API key found.")
+        raise FileNotFoundError(f"No .env file found in {env_path}")
 
     #retrieving USDA data via webscraping
     def get_condition_data(commodity: str, year: int, state=None):
@@ -34,10 +43,11 @@ def sentiment_analysis():
         }
         if state:
             parameters["state_alpha"] = state.upper()
-        response = requests.get(USDA_API_BASE_URL, params=parameters, timeout=60)
+        response = requests.get(USDA_API_BASE_URL, params=parameters, timeout=120)
         response.raise_for_status()
         return response.json()["data"]
 
+    #retrieving data from 2010 to 2025
     YEARS = list(range(2010,2026))
     all_records = []
 
@@ -124,7 +134,7 @@ def sentiment_analysis():
     sentiment_annual.to_csv(os.path.join(DATA_DIR, SENTIMENT_ANNUAL), index=False)
     print("Exported both weekly and annual sentiment scores for commodities")
 
-    #Visualization
+    #Visualization for sentiment chart
     fig, ax = plt.subplots(figsize=(11,5))
 
     for commodity in COMMODITIES:

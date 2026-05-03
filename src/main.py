@@ -1,9 +1,13 @@
-#Python Script that runs all code from start to finish
+#Python Script that runs all code from start to finish - just need to run once
+import sys
+import os
 
-from src.database_creation import build_database
-from src.merging_and_analysis import run_analysis
-from src.visualizations import visualizations
-from src.USDA_API_Data import sentiment_analysis
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from database_creation import build_database
+from merging_and_analysis import run_analysis
+from visualizations import visualizations
+from USDA_API_Data import sentiment_analysis
 
 if __name__ == "__main__":
 
